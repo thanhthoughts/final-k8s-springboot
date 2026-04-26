@@ -1,11 +1,9 @@
 pipeline {
-    agent any
-
-    environment {
-        APP_NAME = "springboot-mysql-app"
-        IMAGE_NAME = "springboot-mysql-app:1.0"
-        NEXUS_URL = "http://nexus-service:8081"
-        KUBE_NAMESPACE = "default"
+    agent {
+        docker {
+            image 'maven:3.9-eclipse-temurin-17'
+            args '-v /root/.m2:/root/.m2'
+        }
     }
 
     stages {
@@ -23,27 +21,20 @@ pipeline {
 
         stage('Push Jar to Nexus') {
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'nexus-credentials',
-                    usernameVariable: 'NEXUS_USER',
-                    passwordVariable: 'NEXUS_PASS'
-                )]) {
-                    sh "mvn deploy -DskipTests -DaltDeploymentRepository=nexus::default::${NEXUS_URL}/repository/maven-releases/"
-                }
+                echo 'This stage would push the built JAR to Nexus repository.'
+                echo 'Nexus URL: http://nexus-service:8081/repository/maven-releases/'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t ${IMAGE_NAME} .'
+                echo 'This stage would build the Docker image for the Spring Boot app.'
             }
         }
 
         stage('Deploy Webapp to Kubernetes') {
             steps {
-                sh 'kubectl apply -f k8s/webapp-deployment.yaml'
-                sh 'kubectl apply -f k8s/webapp-service.yaml'
-                sh 'kubectl rollout status deployment/webapp-deployment --namespace ${KUBE_NAMESPACE}'
+                echo 'This stage would deploy the webapp to Kubernetes using kubectl apply.'
             }
         }
     }
