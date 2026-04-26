@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: spring-webapp
+  template:
+    metadata:
+      labels:
+        app: spring-webapp
+    spec:
+      containers:
+        - name: spring-webapp
+          image: springboot-mysql-app:1.0
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: mysql-config
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
